@@ -3,8 +3,26 @@ from sklearn import preprocessing
 from sklearn.preprocessing import OneHotEncoder
 import numpy as np
 from sklearn.preprocessing import normalize
-
 from sklearn import feature_extraction
+import pandas as pd
+import numpy as np
+from sklearn.feature_selection import SelectKBest, VarianceThreshold
+from sklearn.feature_selection import chi2
+
+def abc():
+    data = pd.read_csv("spam.csv", encoding = "latin-1")
+    X = data.iloc[:, 1]  
+    y = data.iloc[:,0]  
+    y = y.map({"spam":1, "ham":0})  
+    features = feature_extraction.text.CountVectorizer(stop_words="english")
+    x = features.fit_transform(X);
+    bestfeatures = SelectKBest(score_func=chi2, k=10)
+    fit = bestfeatures.fit(x,y)
+    dfscores = pd.DataFrame(fit.scores_)
+    dfcolumns = pd.DataFrame(X)
+    featureScores = pd.concat([dfcolumns,dfscores],axis=1)
+    featureScores.columns = ['Specs','Score']  
+    print(featureScores.nlargest(10,'Score'))  
 
 
 def DataProcessing():
@@ -26,7 +44,13 @@ def DataProcessing():
     #     index += 1
     features = feature_extraction.text.CountVectorizer(stop_words="english")
     x = features.fit_transform(x);
-    x= normalize(x)
+    print(x.shape)
+
+    s = VarianceThreshold(0.05)
+    x = s.fit_transform(x)
+    print(s.get_feature_names_out())
+
+    
 
    # print(np.shape(x))
    # print(np.shape(y))
@@ -37,6 +61,7 @@ def testing(email):
     feature = feature_extraction.text.CountVectorizer(stop_words="english")
     email = feature.fit_transform(email)
     print(email.shape)
+    print(feature.get_feature_names_out())
     y = [1]
     return email, y
 
